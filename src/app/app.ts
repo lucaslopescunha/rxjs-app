@@ -1,4 +1,5 @@
 import { Component, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { interval, map, min, skip } from 'rxjs';
 
 @Component({
@@ -9,17 +10,24 @@ import { interval, map, min, skip } from 'rxjs';
 export class AppComponent implements OnInit {
   protected readonly title = signal('rxjs-app');
   private desttroyRef = inject(DestroyRef);
-  clickCount = signal(0);
   paragraphClass = signal<string>('#48a160');
+  interval = signal(0);
+  doubleInterval = () => this.interval() * 2;
+  clickCount = signal(0);
 
+  interval$ = interval(1000);
+  intervalSignal = toSignal(this.interval$, {initialValue: 0});
+  /**
+   * $ means it is an Observable
+   */
+  clickCount$ = toObservable(this.clickCount);
   constructor() {
-    effect(() => {
-      console.log(`clicked button ${this.clickCount()}`)
-    })
-
   }
 
   ngOnInit(): void {
+    setInterval(() => {
+      this.interval.update(prev => prev + 1);
+    }, 1000)
     const subscribeColor = interval(2000)
       .pipe(
         map(val => {
@@ -42,24 +50,9 @@ export class AppComponent implements OnInit {
         }); 
         
         */
-    const subscription = interval(1000)
-      /**
-       * Pipe is somewhat like streams in java.
-       */
-      .pipe(
-        /**
-         * chaining. Start after number 10.
-         */
-        skip(10),
-        /**
-         * Map passes each source value through a transformation 
-         * function to get corresponding output values
-         */
-        map((val) => val * 2)
-      )
-      .subscribe(
-        (val) => console.log(val)
-      );
+    const subscription = this.clickCount$.subscribe( (val) => {
+      console.log(`Clicked button ${this.clickCount()} times.`)
+    });
 
     this.desttroyRef.onDestroy(() => {
       /**
