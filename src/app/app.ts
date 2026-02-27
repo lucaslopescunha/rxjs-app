@@ -1,6 +1,6 @@
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { interval } from 'rxjs';
+import { interval, map, min, skip } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -15,8 +15,25 @@ export class AppComponent implements OnInit {
 /** You can use a simple function here because you're only using "next"
     interval(1000).subscribe({
       next: (val) => console.log(val)
-    }); */
-    const subscription = interval(1000).subscribe(
+    }); 
+    
+    */
+    const subscription = interval(1000)
+    /**
+     * Pipe is somewhat like streams in java.
+     */
+    .pipe(
+      /**
+       * chaining. Start after number 10.
+       */
+      skip(10),
+      /**
+       * Map passes each source value through a transformation 
+       * function to get corresponding output values
+       */
+      map((val) => val * 2)
+    )
+    .subscribe(
       (val) => console.log(val)
     );
 
